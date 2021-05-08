@@ -24,6 +24,9 @@ public class Center {
     private String districtName;
     @JsonProperty("block_name")
     private String blockName;
+
+
+
     @JsonProperty("pincode")
     private Integer pinCode;
     @JsonProperty("from")
@@ -44,9 +47,7 @@ public class Center {
     @JsonProperty("available_capacity")
     private Long availableCapacity;
 
-    public Integer getMinAge() {
-        return minAge;
-    }
+
 
     @JsonProperty("fee")
     private Double fees;
@@ -59,5 +60,13 @@ public class Center {
 
     public Long getAvailableCapacity() {
         return availableCapacity;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public Integer getMinAge() {
+        return minAge;
     }
 }

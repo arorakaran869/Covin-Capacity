@@ -15,6 +15,8 @@ import com.android.volley.toolbox.Volley;
 import com.dwitsolutions.cowincaptest.dao.CoWinDao;
 import com.dwitsolutions.cowincaptest.dao.CoWinDaoRestImpl;
 
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity {
 
     static CoWinDao coWinDao;
@@ -121,10 +123,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    public static void checkcentersdata()
+    public static void checkcentersdata(Date date)
     {
-        coWinDao.fetchCenters(sharedPreferences.getInt("pincode",0));
+       coWinDao.fetchCenters(sharedPreferences.getInt("pincode",0));
 
+        //coWinDao.fetchCenters(474006);
     }
 
 

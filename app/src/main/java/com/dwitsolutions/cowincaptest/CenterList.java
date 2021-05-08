@@ -22,6 +22,7 @@ public class CenterList extends AppCompatActivity {
     listAdapter listAdapter;
     Intent intent;
     String finalList;
+    Bundle bundle;
 
 
     @Override
@@ -32,9 +33,10 @@ public class CenterList extends AppCompatActivity {
         listView = findViewById(R.id.listview);
 
         intent = getIntent();
-        finalList = intent.getStringExtra("data");
+        bundle = intent.getExtras();
+        finalList = bundle.getString("data");
 
-        Log.d("TAG 37",finalList);
+//        Log.d("TAG 37",finalList);
 
 
 

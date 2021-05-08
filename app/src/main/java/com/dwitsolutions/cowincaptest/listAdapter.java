@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 
 import com.dwitsolutions.cowincaptest.model.Center;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,11 +52,14 @@ public class listAdapter extends BaseAdapter {
         TextView centerName = (TextView) convertView.findViewById(R.id.center_name);
         TextView centerAge = (TextView) convertView.findViewById(R.id.age_TV);
         TextView centerAvl = (TextView) convertView.findViewById(R.id.cap_TV);
+        TextView date = (TextView) convertView.findViewById(R.id.date);
         // Populate the data into the template view using the data object
 
         centerName.setText(centerList.get(position).getName());
         centerAge.setText("Age"+centerList.get(position).getMinAge());
         centerAvl.setText("AVL"+centerList.get(position).getAvailableCapacity());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        date.setText("Date - "+ simpleDateFormat.format(centerList.get(position).getDate()));
 
         // Return the completed view to render on screen
         return convertView;

@@ -49,6 +49,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
     private RequestQueue requestQueue;
     private Context context;
     String finalListString;
+    List<Center> finalList;
 
     //Todo : Constants must be in property file
     String rootPath = "https://cdn-api.co-vin.in/api";
@@ -140,6 +141,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
     @Override
     public void fetchCenters(Integer pincode) {
         Date currentDate = new Date();
+        finalList = new ArrayList<>();
         for (int x = 0; x < 7; x++) {
             LocalDateTime localDateTime = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -180,7 +182,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
                                 if(centersList.size()>0)
                                 {
 
-                                    List<Center> finalList = new ArrayList<>();
+
 
                                   for(int i=0;i<centersList.size();i++)
                                   {
@@ -191,38 +193,12 @@ public class CoWinDaoRestImpl implements CoWinDao {
                                       {
                                           Log.d("TAGcentername",c.getName());
 
-                                          sendNotification();
+
                                           finalList.add(centersList.get(i));
-
-
-
-
                                           //raise alarm
-
-
                                       }
 
                                   }
-
-                                    final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-                                    final ObjectMapper mapper2 = new ObjectMapper();
-
-                                    try {
-                                        mapper2.writeValue(out2, finalList);
-
-                                        final byte[] data = out2.toByteArray();
-                                        Log.d("TAG",new String(data));
-
-                                        finalListString = new String(data);
-
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Log.d("TAG exception",e.getMessage());
-                                    }
-
-
-
 
                                 }
 
@@ -253,6 +229,30 @@ public class CoWinDaoRestImpl implements CoWinDao {
 
 
         }
+
+        final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+        final ObjectMapper mapper2 = new ObjectMapper();
+
+        try {
+            mapper2.writeValue(out2, finalList);
+
+            final byte[] data = out2.toByteArray();
+            finalListString = new String(data);
+            Log.d("TAG",new String(data));
+
+            if(finalList.size()>0)
+            {
+                sendNotification();
+            }
+
+        }
+        catch (Exception e)
+        {
+            Log.d("TAG exception",e.getMessage());
+        }
+
+
+
     }
 
     @Override
@@ -315,8 +315,10 @@ public class CoWinDaoRestImpl implements CoWinDao {
     }
 
     private void sendNotification() {
-        Intent intent = new Intent(context, CenterList.class).putExtra("data",finalListString);
+        Intent intent = new Intent(context, CenterList.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        intent.putExtra("data",finalListString);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
         String channelId = context.getString(R.string.default_notification_channel_id);
@@ -339,9 +341,12 @@ public class CoWinDaoRestImpl implements CoWinDao {
                     "Cloud Messaging Service",
                     NotificationManager.IMPORTANCE_DEFAULT);
             notificationManager.createNotificationChannel(channel);
+
+
         }
         mediaPlayer.start();
         notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
+
     }
 }
 

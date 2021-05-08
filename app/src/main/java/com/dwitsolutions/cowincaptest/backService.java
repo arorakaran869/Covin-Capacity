@@ -12,8 +12,7 @@ import com.dwitsolutions.cowincaptest.MainActivity;
 public class backService extends Service {
 
     CountDownTimer cdt;
-    public static SharedPreferences serviceSP;
-    public static SharedPreferences.Editor editor;
+
 
     public backService() {
     }
@@ -29,12 +28,16 @@ public class backService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        cdt = new CountDownTimer(30000000, 10000) {
+        cdt = new CountDownTimer(1000*60*60*60, 60*1000*5) {
             @Override
             public void onTick(long millisUntilFinished) {
 
-               // Log.d("TAG", "Countdown seconds remaining: " + millisUntilFinished / 1000);
-                MainActivity.checkcentersdata();
+                for (int x = 0; x < 7; x++) {
+                    // Log.d("TAG", "Countdown seconds remaining: " + millisUntilFinished / 1000);
+                 //   MainActivity.checkcentersdata();
+                }
+
+
             }
 
             @Override
