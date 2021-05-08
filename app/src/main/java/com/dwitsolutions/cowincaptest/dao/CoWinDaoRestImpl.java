@@ -1,9 +1,17 @@
 package com.dwitsolutions.cowincaptest.dao;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -174,12 +182,14 @@ public class CoWinDaoRestImpl implements CoWinDao {
 
                                       Center c = centersList.get(i);
 
-                                      if(c.getAvailableCapacity()>0 && c.getMinAge()==18)
+                                      if(c.getAvailableCapacity()>0 && c.getMinAge()==45)
                                       {
                                           Log.d("TAGcentername",c.getName());
 
-                                          MediaPlayer mediaPlayer = MediaPlayer.create(context, R.raw.ring);
-                                          mediaPlayer.start();
+                                          sendNotification();
+
+
+
 
 
 
@@ -215,7 +225,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
                     new Response.ErrorListener() {
                         @Override
                         public void onErrorResponse(VolleyError error) {
-                            Log.e("ERROR", centerPincodeURL);
+                            Log.e("ERROR","on Response Error"+ centerPincodeURL);
 
 
                         }
@@ -288,6 +298,36 @@ public class CoWinDaoRestImpl implements CoWinDao {
 
     @Override
     public void fetchCenters(String stateName, String districtName) {
+    }
+
+    private void sendNotification() {
+        Intent intent = new Intent(context, CenterList.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
+                PendingIntent.FLAG_ONE_SHOT);
+        String channelId = context.getString(R.string.default_notification_channel_id);
+        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(context, channelId)
+                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setContentTitle("You can Book Center Now")
+                        .setContentText("Click to view current availability status")
+                        .setAutoCancel(true)
+                        .setContentIntent(pendingIntent);
+        NotificationManager notificationManager =
+                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        MediaPlayer mediaPlayer = MediaPlayer.create(context,R.raw.ring);
+        // Since android Oreo notification channel is needed.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Channel human readable title
+            NotificationChannel channel = new NotificationChannel(channelId,
+                    "Cloud Messaging Service",
+                    NotificationManager.IMPORTANCE_DEFAULT);
+            notificationManager.createNotificationChannel(channel);
+        }
+        mediaPlayer.start();
+        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
     }
 }
 

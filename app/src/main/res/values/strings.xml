@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Cowin Cap Test</string>
+    <string name="title_activity_center_list">CenterList</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+
+    <string name="default_notification_channel_id">101</string>
 </resources>

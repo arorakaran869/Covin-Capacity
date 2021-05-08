@@ -6,6 +6,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -43,8 +44,10 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, backService.class);
 
 
-        if (sharedPreferences.getInt("pincode", 0) == 0)
-        {
+
+
+
+
 
         start.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,10 +69,9 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-    }
-        else {
-            start.setVisibility(View.GONE);
-            stop.setVisibility(View.VISIBLE);
+
+
+
 
             stop.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -85,8 +87,25 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             });
-        }
 
+
+            if(sharedPreferences.getInt("pincode",0)==0)
+            {
+
+                Log.d("TAG shared data","no");
+
+                pincode.setVisibility(View.VISIBLE);
+                start.setVisibility(View.VISIBLE);
+                stop.setVisibility(View.GONE);
+
+            }
+
+            else {
+                pincode.setVisibility(View.GONE);
+                start.setVisibility(View.GONE);
+                stop.setVisibility(View.VISIBLE);
+                Log.d("TAG shared data","yes");
+            }
 
 
 

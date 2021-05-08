@@ -42,4 +42,10 @@ public class backService extends Service {
 
         cdt.start();
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        cdt.cancel();
+    }
 }
