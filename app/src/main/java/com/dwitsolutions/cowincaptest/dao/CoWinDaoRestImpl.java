@@ -5,6 +5,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -19,8 +20,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import com.dwitsolutions.cowincaptest.CenterList;
+import com.dwitsolutions.cowincaptest.MainActivity;
 import com.dwitsolutions.cowincaptest.R;
-import com.dwitsolutions.cowincaptest.dao.CoWinDao;
 import com.dwitsolutions.cowincaptest.model.Center;
 import com.dwitsolutions.cowincaptest.model.District;
 import com.dwitsolutions.cowincaptest.model.State;
@@ -33,6 +35,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -45,7 +48,7 @@ import java.util.List;
 public class CoWinDaoRestImpl implements CoWinDao {
     private RequestQueue requestQueue;
     private Context context;
-
+    String finalListString;
 
     //Todo : Constants must be in property file
     String rootPath = "https://cdn-api.co-vin.in/api";
@@ -177,6 +180,8 @@ public class CoWinDaoRestImpl implements CoWinDao {
                                 if(centersList.size()>0)
                                 {
 
+                                    List<Center> finalList = new ArrayList<>();
+
                                   for(int i=0;i<centersList.size();i++)
                                   {
 
@@ -187,9 +192,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
                                           Log.d("TAGcentername",c.getName());
 
                                           sendNotification();
-
-
-
+                                          finalList.add(centersList.get(i));
 
 
 
@@ -199,13 +202,24 @@ public class CoWinDaoRestImpl implements CoWinDao {
 
                                       }
 
-
-
-
-
-
-
                                   }
+
+                                    final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+                                    final ObjectMapper mapper2 = new ObjectMapper();
+
+                                    try {
+                                        mapper2.writeValue(out2, finalList);
+
+                                        final byte[] data = out2.toByteArray();
+                                        Log.d("TAG",new String(data));
+
+                                        finalListString = new String(data);
+
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Log.d("TAG exception",e.getMessage());
+                                    }
 
 
 
@@ -301,7 +315,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
     }
 
     private void sendNotification() {
-        Intent intent = new Intent(context, CenterList.class);
+        Intent intent = new Intent(context, CenterList.class).putExtra("data",finalListString);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);

@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     int pincodevalue;
     AppCompatButton start,stop;
     public static SharedPreferences sharedPreferences;
-    public SharedPreferences.Editor editor;
+    public static SharedPreferences.Editor editor;
 
 
     @Override

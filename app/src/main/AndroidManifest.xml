@@ -19,7 +19,7 @@
       -->
 
         <activity
-            android:name=".dao.CenterList"
+            android:name=".CenterList"
             android:label="@string/title_activity_center_list">
 
         </activity>
