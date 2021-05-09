@@ -1,7 +1,6 @@
 package com.dwitsolutions.cowincaptest;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,6 @@ import androidx.annotation.NonNull;
 import com.dwitsolutions.cowincaptest.model.Center;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 
 public class listAdapter extends BaseAdapter {
@@ -46,7 +44,7 @@ public class listAdapter extends BaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.center_row, parent, false);
+            convertView = LayoutInflater.from(context).inflate(R.layout.center_item, parent, false);
         }
         // Lookup view for data population
         TextView centerName = (TextView) convertView.findViewById(R.id.center_name);

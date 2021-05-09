@@ -1,6 +1,7 @@
 package com.dwitsolutions.cowincaptest;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -10,8 +11,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.dwitsolutions.cowincaptest.R;
+import com.dwitsolutions.cowincaptest.adapter.CenterAdapter;
 import com.dwitsolutions.cowincaptest.model.Center;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,12 +27,14 @@ import com.google.android.gms.ads.initialization.OnInitializationCompleteListene
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CenterList extends AppCompatActivity {
 
-    ListView listView;
+    RecyclerView recyclerView;
+    CenterAdapter centerAdapter;
     listAdapter listAdapter;
     Intent intent;
     String finalList;
@@ -41,6 +47,8 @@ public class CenterList extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_center_list);
+        recyclerView = findViewById(R.id.center_list_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
 
         MobileAds.initialize(this, new OnInitializationCompleteListener() {
             @Override
@@ -67,24 +75,37 @@ public class CenterList extends AppCompatActivity {
             }
         });
 
-        listView = findViewById(R.id.listview);
-
-        intent = getIntent();
-        bundle = intent.getExtras();
-        finalList = bundle.getString("data");
-
-//        Log.d("TAG 37",finalList);
-
-
 
         try {
-            String actualResponse = finalList;
-            ObjectMapper mapper = new ObjectMapper();
-            List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
-            });
-            Log.d("TAG 43",""+centersList.size());
-            listAdapter = new listAdapter(getApplicationContext(),centersList);
-            listView.setAdapter(listAdapter);
+
+            Splash.splashSP.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+                Log.d("TAG",key);
+                if(key.equals("finallist")) {
+                    String result = sharedPreferences.getString(key, "");
+                    Log.d("TAG", result);
+
+                    if(!result.equals("")) {
+
+                        try {
+                            String actualResponse = result;
+                            ObjectMapper mapper = new ObjectMapper();
+                            List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
+                            });
+                            Log.d("TAG", "" + centersList.size());
+                            centerAdapter = new CenterAdapter(getApplicationContext(), centersList);
+                            recyclerView.setAdapter(centerAdapter);
+                        } catch (IOException e) {
+                            Log.e("Error", "error in shared preference final result data parsing");
+                        }
+                    }
+                }
+            }
+        });
+
+
         }
         catch (Exception e)
         {
