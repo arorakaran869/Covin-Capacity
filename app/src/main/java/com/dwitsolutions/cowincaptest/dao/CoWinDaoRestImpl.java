@@ -9,11 +9,14 @@ import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import com.airbnb.lottie.L;
+import com.android.volley.AsyncRequestQueue;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -23,6 +26,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.dwitsolutions.cowincaptest.CenterList;
 import com.dwitsolutions.cowincaptest.MainActivity;
 import com.dwitsolutions.cowincaptest.R;
+import com.dwitsolutions.cowincaptest.Splash;
 import com.dwitsolutions.cowincaptest.model.Center;
 import com.dwitsolutions.cowincaptest.model.District;
 import com.dwitsolutions.cowincaptest.model.State;
@@ -49,13 +53,15 @@ public class CoWinDaoRestImpl implements CoWinDao {
     private RequestQueue requestQueue;
     private Context context;
     String finalListString;
-    List<Center> finalList;
+    ArrayList<Center> finalList;
+
+
 
     //Todo : Constants must be in property file
-    String rootPath = "https://cdn-api.co-vin.in/api";
+    public static String rootPath = "https://cdn-api.co-vin.in/api";
     String statesURL = rootPath + "/v2/admin/location/states";
     String districtURL = rootPath + "/v2/admin/location/districts/";
-    String centerPincodeURL = rootPath + "/v2/appointment/sessions/public/findByPin?pincode={0}&date={1}";
+    public static String centerPincodeURL = rootPath + "/v2/appointment/sessions/public/findByPin?pincode={0}&date={1}";
     String centerDistrictIdURL = rootPath + "/v2/appointment/sessions/public/findByDistrict?district_id={0}&date={1}";
 
     public CoWinDaoRestImpl(RequestQueue requestQueue, Context _context) {
@@ -139,9 +145,13 @@ public class CoWinDaoRestImpl implements CoWinDao {
     }
 
     @Override
-    public void fetchCenters(Integer pincode) {
-        Date currentDate = new Date();
+    public void fetchCenters(Integer pincode,int age) {
+
         finalList = new ArrayList<>();
+        Splash.editor.remove("finalList");
+        Splash.editor.commit();
+
+        Date currentDate = new Date();
         for (int x = 0; x < 7; x++) {
             LocalDateTime localDateTime = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -156,109 +166,27 @@ public class CoWinDaoRestImpl implements CoWinDao {
             }
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
-            String centerPincodeURL = MessageFormat.format(this.centerPincodeURL, new String[]{pincode.toString(), sdf.format(currentDatePlusXDay)});
-            Log.d("Pincode URL", centerPincodeURL);
-
-            try{
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                    Request.Method.GET,
-                    centerPincodeURL,
-                    null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-
-                                String actualResponse = response.getJSONArray("sessions").toString();
-                                ObjectMapper mapper = new ObjectMapper();
-                                List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
-                                });
-                                Log.d("TAG", "Pincode = " + pincode + " center = " +  centersList.size());
-                                // Todo : Check for availability,and raise Reminder with name of hospital with the vaccine type and age,
-                                //  put filtered result in recycler view , set data in the global list first and
-                                //  finally when all 7 day result is accumulated show it in recycler view.
+            String centerPincodeURL = MessageFormat.format(CoWinDaoRestImpl.centerPincodeURL, new String[]{pincode.toString(), sdf.format(currentDatePlusXDay)});
+         //   Log.d("TAG URL", centerPincodeURL);
 
 
-                                if(centersList.size()>0)
-                                {
-
-
-
-                                  for(int i=0;i<centersList.size();i++)
-                                  {
-
-                                      Center c = centersList.get(i);
-
-                                      if(c.getAvailableCapacity()>0 && c.getMinAge()==45)
-                                      {
-                                          Log.d("TAGcentername",c.getName());
-
-
-                                          finalList.add(centersList.get(i));
-                                          //raise alarm
-                                      }
-
-                                  }
-
-                                }
-
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            } catch (JsonMappingException e) {
-                                e.printStackTrace();
-                            } catch (JsonProcessingException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e("ERROR","on Response Error"+ centerPincodeURL);
-
-
-                        }
-                    }
-            );
-                requestQueue.add(jsonObjectRequest);
-            }
-            catch (Exception e){
-                Log.d("TAG",e.getMessage());
-            }
-
+            AsyncTask asyncTask = new async(centerPincodeURL,age);
+            Log.d("TAG","executomh");
+            asyncTask.execute(new String[]{""});
 
         }
 
-        final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-        final ObjectMapper mapper2 = new ObjectMapper();
 
-        try {
-            mapper2.writeValue(out2, finalList);
 
-            final byte[] data = out2.toByteArray();
-            finalListString = new String(data);
-            Log.d("TAG",new String(data));
-
-            if(finalList.size()>0)
-            {
-                sendNotification();
-            }
-
-        }
-        catch (Exception e)
-        {
-            Log.d("TAG exception",e.getMessage());
-        }
 
 
 
     }
 
     @Override
-    public void fetchCenters(String districtId) {
+     public void fetchCenters(String districtId) {
         Date currentDate = new Date();
-        for (int x = 0; x < 7; x++) {
+        for      (int x = 0; x < 7; x++) {
             LocalDateTime localDateTime = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 localDateTime = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
@@ -314,39 +242,212 @@ public class CoWinDaoRestImpl implements CoWinDao {
     public void fetchCenters(String stateName, String districtName) {
     }
 
-    private void sendNotification() {
-        Intent intent = new Intent(context, CenterList.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        intent.putExtra("data",finalListString);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
-                PendingIntent.FLAG_ONE_SHOT);
-        String channelId = context.getString(R.string.default_notification_channel_id);
-        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(context, channelId)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentTitle("You can Book Center Now")
-                        .setContentText("Click to view current availability status")
-                        .setAutoCancel(true)
-                        .setContentIntent(pendingIntent);
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        MediaPlayer mediaPlayer = MediaPlayer.create(context,R.raw.ring);
-        // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Channel human readable title
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "Cloud Messaging Service",
-                    NotificationManager.IMPORTANCE_DEFAULT);
-            notificationManager.createNotificationChannel(channel);
 
+   class async extends AsyncTask<String,String,String>
+    {
+        String url;
+        int age;
+
+
+
+        public async(String url,int age)
+        {
+            this.url = url;
+            this.age = age;
+        }
+
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+/*
+            final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+            final ObjectMapper mapper2 = new ObjectMapper();
+            Log.d("TAG size pehle",""+list.size());
+            try {
+                mapper2.writeValue(out2, list);
+
+                final byte[] data = out2.toByteArray();
+                finalListString = new String(data);
+                Log.d("TAG",new String(data));
+
+                if(list.size()>0)
+                {
+                    Log.d("TAG size",""+list.size());
+                    sendNotification();
+                }
+
+            }
+            catch (Exception e)
+            {
+                Log.d("TAG exception",e.getMessage());
+            }
+
+*/
+        }
+
+        private void sendNotification() {
+            Intent intent = new Intent(context, CenterList.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+         //   intent.putExtra("data",finalListString);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
+                    PendingIntent.FLAG_ONE_SHOT);
+            String channelId = context.getString(R.string.default_notification_channel_id);
+            NotificationCompat.Builder notificationBuilder =
+                    new NotificationCompat.Builder(context, channelId)
+                            .setSmallIcon(R.mipmap.ic_launcher)
+                            .setContentTitle("You can Book Center Now")
+                            .setContentText("Click to view current availability status")
+                            .setAutoCancel(true)
+                            .setContentIntent(pendingIntent);
+            NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            MediaPlayer mediaPlayer = MediaPlayer.create(context,R.raw.ring);
+            // Since android Oreo notification channel is needed.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                // Channel human readable title
+                NotificationChannel channel = new NotificationChannel(channelId,
+                        "Cloud Messaging Service",
+                        NotificationManager.IMPORTANCE_DEFAULT);
+                notificationManager.createNotificationChannel(channel);
+
+
+            }
+            mediaPlayer.start();
+            notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
 
         }
-        mediaPlayer.start();
-        notificationManager.notify(0 /* ID of notification */, notificationBuilder.build());
 
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            Log.d("TAG","yes");
+                try{
+                    JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                            Request.Method.GET,
+                            url,
+                            null,
+                            new Response.Listener<JSONObject>() {
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+
+                                        String actualResponse = response.getJSONArray("sessions").toString();
+                                        ObjectMapper mapper = new ObjectMapper();
+                                        List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
+                                        });
+                                       //Log.d("TAG", "Pincode = " + pincode + " center = " +  centersList.size());
+                                        // Todo : Check for availability,and raise Reminder with name of hospital with the vaccine type and age,
+                                        //  put filtered result in recycler view , set data in the global list first and
+                                        //  finally when all 7 day result is accumulated show it in recycler view.
+
+
+                                        if(centersList.size()>0) {
+
+
+                                            for (int i = 0; i < centersList.size(); i++) {
+
+                                                Center c = centersList.get(i);
+
+                                                if (c.getAvailableCapacity() > 0 && c.getMinAge() == age) {
+                                                    //Log.d("TAGcentername",c.getName());
+                                                    //list.add(centersList.get(i));
+
+                                                    try {
+
+                                                        String fls = Splash.splashSP.getString("finallist", "");
+                                                       // Log.d("TAG",fls);
+                                                        if (!fls.equals("")) {
+
+                                                            //fetching list from shared preference
+                                                            ObjectMapper m = new ObjectMapper();
+                                                            ArrayList<Center> cl = m.readValue(fls, new TypeReference<ArrayList<Center>>() {
+                                                            });
+                                                            Log.d("TAG djd",cl.get(0).getName());
+                                                            //adding to the list
+                                                            cl.add(c);
+
+                                                            //list to string conversion
+
+
+                                                            final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+                                                            final ObjectMapper mapper2 = new ObjectMapper();
+                                                            mapper2.writeValue(out2, cl);
+
+                                                            final byte[] data = out2.toByteArray();
+                                                            Log.d("TAG list aa gyi", new String(data));
+                                                            Splash.editor.putString("finallist", new String(data));
+                                                            Splash.editor.commit();
+                                                        } else {
+
+                                                            Log.d("TAG", "kuch aur dikkat");
+                                                            ArrayList<Center> arrayList = new ArrayList<>();
+                                                            arrayList.add(c);
+
+                                                            try {
+                                                                final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+                                                                final ObjectMapper mapper2 = new ObjectMapper();
+                                                                mapper2.writeValue(out2, c);
+
+                                                                final byte[] data = out2.toByteArray();
+
+                                                                Splash.editor.putString("finallist", new String(data));
+                                                                Splash.editor.commit();
+                                                            } catch (Exception e) {
+
+                                                            }
+
+                                                            //raise alarm
+                                                        }
+
+                                                    } catch (Exception e) {
+
+                                                        Log.d("TAG","ye dikkat hai"+e.getMessage());
+
+                                                    }
+
+                                                }
+
+                                            }
+                                        }
+
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    } catch (JsonMappingException e) {
+                                        e.printStackTrace();
+                                    } catch (JsonProcessingException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            },
+                            new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.e("TAG error","on Response Error"+ centerPincodeURL);
+
+
+                                }
+                            }
+                    );
+                    requestQueue.add(jsonObjectRequest);
+                }
+                catch (Exception e){
+                    Log.d("TAG",e.getMessage());
+                }
+
+
+
+
+
+            return null;
+        }
     }
 }
 

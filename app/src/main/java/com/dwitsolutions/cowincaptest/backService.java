@@ -12,6 +12,7 @@ import com.dwitsolutions.cowincaptest.MainActivity;
 public class backService extends Service {
 
     CountDownTimer cdt;
+    int age;
 
 
     public backService() {
@@ -28,15 +29,14 @@ public class backService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        cdt = new CountDownTimer(1000*60*60*60, 60*1000*5) {
+        age = Splash.splashSP.getInt("age",0);
+
+        cdt = new CountDownTimer(1000*60*60*60, 40*1000) {
             @Override
             public void onTick(long millisUntilFinished) {
 
-                for (int x = 0; x < 7; x++) {
                     // Log.d("TAG", "Countdown seconds remaining: " + millisUntilFinished / 1000);
-                 //   MainActivity.checkcentersdata();
-                }
-
+                 PinCodeActivity.checkcentersdata(age);
 
             }
 

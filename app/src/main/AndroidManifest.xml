@@ -13,29 +13,38 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CowinCapTest">
 
-        <!--
-               Set to true if your app is Standalone, that is, it does not require the handheld
-               app to run.
-      -->
-
-        <activity
-            android:name=".CenterList"
-            android:label="@string/title_activity_center_list">
-
-        </activity>
-
-        <service
-            android:name=".backService"
-            android:enabled="true"
-            android:exported="true" />
-
-        <activity android:name=".MainActivity">
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-5741018298007043~9000093635"/>
+        <activity android:name=".CityActivity"></activity>
+        <activity android:name=".Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--
+               Set to true if your app is Standalone, that is, it does not require the handheld
+               app to run.
+        -->
+        <activity
+            android:name=".PinCodeActivity"
+            android:label="@string/title_activity_pin_code"></activity>
+        <!--
+               Set to true if your app is Standalone, that is, it does not require the handheld
+               app to run.
+        -->
+        <activity
+            android:name=".CenterList"
+            android:label="@string/title_activity_center_list" />
+
+        <service
+            android:name=".backService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".MainActivity"></activity>
     </application>
 
 </manifest>
