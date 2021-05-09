@@ -1,5 +1,9 @@
 package com.dwitsolutions.cowincaptest.dao;
 
+import com.dwitsolutions.cowincaptest.model.State;
+
+import java.util.ArrayList;
+
 public interface CoWinDao {
     public void fetchStates();
 

@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.preference.PreferenceManager;
@@ -16,16 +14,12 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.airbnb.lottie.L;
-import com.android.volley.AsyncRequestQueue;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-
 import com.dwitsolutions.cowincaptest.CenterList;
-import com.dwitsolutions.cowincaptest.MainActivity;
 import com.dwitsolutions.cowincaptest.R;
 import com.dwitsolutions.cowincaptest.model.Center;
 import com.dwitsolutions.cowincaptest.model.District;
@@ -35,36 +29,32 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
-
 import java.util.List;
 
 public class CoWinDaoRestImpl implements CoWinDao {
-    private RequestQueue requestQueue;
-    private Context context;
+    //Todo : Constants must be in property file
+    public static String rootPath = "https://cdn-api.co-vin.in/api";
+    public static String centerPincodeURL = rootPath + "/v2/appointment/sessions/public/findByPin?pincode={0}&date={1}";
     String finalListString;
     ArrayList<Center> finalList;
     SharedPreferences defaultSharedPreference;
     SharedPreferences.Editor defaultSharedPreferenceEditor;
-    int count =0;
-
-
-    //Todo : Constants must be in property file
-    public static String rootPath = "https://cdn-api.co-vin.in/api";
+    int count = 0;
     String statesURL = rootPath + "/v2/admin/location/states";
     String districtURL = rootPath + "/v2/admin/location/districts/";
-    public static String centerPincodeURL = rootPath + "/v2/appointment/sessions/public/findByPin?pincode={0}&date={1}";
     String centerDistrictIdURL = rootPath + "/v2/appointment/sessions/public/findByDistrict?district_id={0}&date={1}";
+    private RequestQueue requestQueue;
+    private Context context;
 
     public CoWinDaoRestImpl(RequestQueue requestQueue, Context _context) {
         this.requestQueue = requestQueue;
@@ -150,35 +140,22 @@ public class CoWinDaoRestImpl implements CoWinDao {
 
     @Override
     public void fetchCenters(Integer pincode, int age) {
-
-
-
-
         count = 0;
-
         Date currentDate = new Date();
         for (int x = 0; x < 7; x++) {
+            Date currentDatePlusXDay = null;
             LocalDateTime localDateTime = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 localDateTime = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 localDateTime = localDateTime.plusYears(0).plusMonths(0).plusDays(x);
-            }
-            Date currentDatePlusXDay = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 currentDatePlusXDay = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
             }
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
 
             String centerPincodeURL = MessageFormat.format(CoWinDaoRestImpl.centerPincodeURL, new String[]{pincode.toString(), sdf.format(currentDatePlusXDay)});
-            //   Log.d("TAG URL", centerPincodeURL);
-
-
             AsyncTask asyncTask = new async(centerPincodeURL, age);
-            Log.d("TAG", "executomh");
+            Log.d("TAG", "Async Execute");
             asyncTask.execute(new String[]{""});
-
         }
 
 
@@ -258,14 +235,6 @@ public class CoWinDaoRestImpl implements CoWinDao {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-
-            Log.d("TAG count",count+"");
-            String fls = defaultSharedPreference.getString("finallist", "[]");
-            if (!fls.equals("[]")&&count==6) {
-                sendNotification();
-            }
-
-            count++;
         }
 
         private void sendNotification() {
@@ -312,70 +281,25 @@ public class CoWinDaoRestImpl implements CoWinDao {
                             @Override
                             public void onResponse(JSONObject response) {
                                 try {
-
+                                    boolean isDataPresentForTheDay = false;
                                     String actualResponse = response.getJSONArray("sessions").toString();
                                     ObjectMapper mapper = new ObjectMapper();
-                                    List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
+                                    List<Center> apiResponseCenters = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
                                     });
 
-                                    ArrayList<Center> arrayList = new ArrayList<>();
-
-
-                                    for (int i = 0; i < centersList.size() && centersList.get(i).getAvailableCapacity() > 0 && centersList.get(i).getMinAge() == age; i++) {
-                                        arrayList.add(centersList.get(i));
-                                        // Center c = centersList.get(i);
+                                    for (int i = 0; i < apiResponseCenters.size() && apiResponseCenters.get(i).getAvailableCapacity() > 0 && apiResponseCenters.get(i).getMinAge() == age; i++) {
+                                        isDataPresentForTheDay = true;
                                     }
-
-                                    try {
-                                        String fls = defaultSharedPreference.getString("finallist", "[]");
-
-                                        // if (!fls.equals("")) {
-                                        //fetching list from shared preference
-
-                                        ObjectMapper m = new ObjectMapper();
-                                        List<Center> cl = m.readValue(fls, new TypeReference<ArrayList<Center>>() {
+                                    if (isDataPresentForTheDay) {
+                                        sendNotification();
+                                        requestQueue.cancelAll(new RequestQueue.RequestFilter() {
+                                            @Override
+                                            public boolean apply(Request<?> request) {
+                                                return true;
+                                            }
                                         });
-
-                                        //adding to the list
-                                        cl.addAll(arrayList);
-                                        //list to string conversion
-                                        final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-                                        final ObjectMapper mapper2 = new ObjectMapper();
-                                        mapper2.writeValue(out2, cl);
-                                        final byte[] data = out2.toByteArray();
-                                        Log.d("TAG list aa gyi", new String(data));
-                                        defaultSharedPreferenceEditor.remove("finallist");
-                                        defaultSharedPreferenceEditor.commit();
-                                        defaultSharedPreferenceEditor.putString("finallist", new String(data));
-                                        defaultSharedPreferenceEditor.commit();
-                                        //}
-//                                        else {
-//
-//                                            List<Center> arrayList = new ArrayList<>();
-//                                            arrayList.add(c);
-//                                            try {
-//                                                final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-//                                                final ObjectMapper mapper2 = new ObjectMapper();
-//                                                mapper2.writeValue(out2, arrayList);
-//                                                final byte[] data = out2.toByteArray();
-//                                                defaultSharedPreferenceEditor.remove("finallist");
-//                                                defaultSharedPreferenceEditor.commit();
-//                                                defaultSharedPreferenceEditor.putString("finallist", new String(data));
-//                                                defaultSharedPreferenceEditor.commit();
-//                                            } catch (Exception e) {
-//                                            }
-//                                            //raise alarm
-//                                        }
-                                    } catch (Exception e) {
-                                        Log.d("TAG", "ye dikkat hai" + e.getMessage());
-                                        e.printStackTrace();
                                     }
-
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                } catch (JsonMappingException e) {
-                                    e.printStackTrace();
-                                } catch (JsonProcessingException e) {
+                                } catch (JSONException | IOException e) {
                                     e.printStackTrace();
                                 }
                             }
@@ -383,7 +307,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Log.e("TAG error", "on Response Error" + centerPincodeURL);
+                                Log.e("TAG error", "on Response Error " + url);
                             }
                         }
                 );

@@ -34,15 +34,10 @@ public class backService extends Service {
         defaultSharedPreferenceEditor = defaultSharedPreference.edit();
         age = defaultSharedPreference.getInt("age",0);
 
-        cdt = new CountDownTimer(1000*60*60*60, 40*1000) {
+        cdt = new CountDownTimer(1000*60*60*60, 60*1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-
-                // Log.d("TAG", "Countdown seconds remaining: " + millisUntilFinished / 1000);
-                defaultSharedPreferenceEditor.remove("finallist");
-                defaultSharedPreferenceEditor.commit();
                 PinCodeActivity.checkcentersdata(age);
-
             }
 
             @Override

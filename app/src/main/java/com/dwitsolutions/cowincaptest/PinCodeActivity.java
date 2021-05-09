@@ -138,7 +138,7 @@ public class PinCodeActivity extends AppCompatActivity {
         });
 
 
-        if(Splash.splashSP.getInt("pincode",0)==0)
+        if(defaultSharedPreference.getInt("pincode",0)==0)
         {
 
 
