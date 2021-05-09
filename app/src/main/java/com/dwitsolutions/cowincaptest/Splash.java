@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,7 +20,7 @@ public class Splash extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        splashSP = getSharedPreferences("covin",MODE_PRIVATE);
+        splashSP = PreferenceManager.getDefaultSharedPreferences(this);
         editor = splashSP.edit();
 
         new Timer().schedule(new TimerTask() {

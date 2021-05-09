@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -41,11 +42,14 @@ public class CenterList extends AppCompatActivity {
     Bundle bundle;
     private InterstitialAd mInterstitialAd;
     boolean doubleBackToExitPressedOnce = false;
-
+    SharedPreferences defaultSharedPreference;
+    SharedPreferences.Editor defaultSharedPreferenceEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        defaultSharedPreference = PreferenceManager.getDefaultSharedPreferences(this);
+        defaultSharedPreferenceEditor = defaultSharedPreference.edit();
         setContentView(R.layout.activity_center_list);
         recyclerView = findViewById(R.id.center_list_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
@@ -77,33 +81,41 @@ public class CenterList extends AppCompatActivity {
 
 
         try {
-
-            Splash.splashSP.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-
-                Log.d("TAG",key);
-                if(key.equals("finallist")) {
-                    String result = sharedPreferences.getString(key, "");
-                    Log.d("TAG", result);
-
-                    if(!result.equals("")) {
-
-                        try {
-                            String actualResponse = result;
-                            ObjectMapper mapper = new ObjectMapper();
-                            List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
-                            });
-                            Log.d("TAG", "" + centersList.size());
-                            centerAdapter = new CenterAdapter(getApplicationContext(), centersList);
-                            recyclerView.setAdapter(centerAdapter);
-                        } catch (IOException e) {
-                            Log.e("Error", "error in shared preference final result data parsing");
-                        }
-                    }
-                }
-            }
-        });
+            Log.d("TEST-V1",defaultSharedPreference.getString("finallist","NO DATA IN FINALLIST"));
+            String result = defaultSharedPreference.getString("finallist", "");
+            String actualResponse = result;
+            ObjectMapper mapper = new ObjectMapper();
+            List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
+            });
+            Log.d("TAG", "" + centersList.size());
+            centerAdapter = new CenterAdapter(getApplicationContext(), centersList);
+            recyclerView.setAdapter(centerAdapter);
+//            defaultSharedPreference.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+//            @Override
+//            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+//                Log.d("TEST-V1",defaultSharedPreference.getString("finallist","DATA IN SHARED PREFERENCE CHANGED"));
+//                Log.d("TAG",key);
+//                if(key.equals("finallist")) {
+//                    String result = sharedPreferences.getString(key, "");
+//                    Log.d("TAG", result);
+//
+//                    if(!result.equals("")) {
+//
+//                        try {
+//                            String actualResponse = result;
+//                            ObjectMapper mapper = new ObjectMapper();
+//                            List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
+//                            });
+//                            Log.d("TAG", "" + centersList.size());
+//                            centerAdapter = new CenterAdapter(getApplicationContext(), centersList);
+//                            recyclerView.setAdapter(centerAdapter);
+//                        } catch (IOException e) {
+//                            Log.e("Error", "error in shared preference final result data parsing");
+//                        }
+//                    }
+//                }
+//            }
+//        });
 
 
         }
@@ -112,7 +124,7 @@ public class CenterList extends AppCompatActivity {
             Log.d("TAG exception",e.getMessage());
         }
 
-      //
+        //
 
 
     }
@@ -145,5 +157,9 @@ public class CenterList extends AppCompatActivity {
     //show ad and exit
 
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        defaultSharedPreferenceEditor.remove("finallist").commit();
+    }
 }

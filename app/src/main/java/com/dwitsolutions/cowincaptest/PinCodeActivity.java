@@ -3,6 +3,7 @@ package com.dwitsolutions.cowincaptest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.StaticLayout;
 import android.util.Log;
 import android.view.View;
@@ -35,10 +36,15 @@ public class PinCodeActivity extends AppCompatActivity {
     RadioGroup ageradiogroup;
     int age=0;
 
+    static SharedPreferences defaultSharedPreference;
+    static SharedPreferences.Editor defaultSharedPreferenceEditor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        defaultSharedPreference = PreferenceManager.getDefaultSharedPreferences(this);
+        defaultSharedPreferenceEditor = defaultSharedPreference.edit();
         setContentView(R.layout.activity_pin_code);
 
         start = findViewById(R.id.startbypincode);
@@ -58,13 +64,13 @@ public class PinCodeActivity extends AppCompatActivity {
                     case R.id.age18:
                         age=18;
                         Log.d("TAG","selected age"+age);
-                        Splash.editor.putInt("age",age);
-                        Splash.editor.commit();
+                        defaultSharedPreferenceEditor.putInt("age",age);
+                        defaultSharedPreferenceEditor.commit();
                         break;
                     case R.id.age45:
                         age=45;
-                        Splash.editor.putInt("age",age);
-                        Splash.editor.commit();
+                        defaultSharedPreferenceEditor.putInt("age",age);
+                        defaultSharedPreferenceEditor.commit();
                         Log.d("TAG","selected age"+age);
                         break;
                 }
@@ -87,9 +93,9 @@ public class PinCodeActivity extends AppCompatActivity {
                 else {
                     pincodevalue = Integer.valueOf(pincode.getText().toString());
 
-                    Splash.editor.putString("type", "pincode");
-                    Splash.editor.putInt("pincode", pincodevalue);
-                    Splash.editor.commit();
+                    defaultSharedPreferenceEditor.putString("type", "pincode");
+                    defaultSharedPreferenceEditor.putInt("pincode", pincodevalue);
+                    defaultSharedPreferenceEditor.commit();
 
                     pincode.setVisibility(View.GONE);
                     start.setVisibility(View.GONE);
@@ -113,9 +119,9 @@ public class PinCodeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Splash.editor.remove("type");
-                Splash.editor.remove("pincode");
-                Splash.editor.commit();
+                defaultSharedPreferenceEditor.remove("type");
+                defaultSharedPreferenceEditor.remove("pincode");
+                defaultSharedPreferenceEditor.commit();
                 stopService(intent);
 
                 start.setVisibility(View.VISIBLE);
@@ -178,7 +184,7 @@ public class PinCodeActivity extends AppCompatActivity {
 
     public static void checkcentersdata(int age)
     {
-        coWinDao.fetchCenters(Splash.splashSP.getInt("pincode",0),age);
+        coWinDao.fetchCenters(defaultSharedPreference.getInt("pincode",0),defaultSharedPreference.getInt("age",0));
 
         //coWinDao.fetchCenters(474006);
     }

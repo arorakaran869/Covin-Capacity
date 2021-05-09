@@ -11,6 +11,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -26,7 +27,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.dwitsolutions.cowincaptest.CenterList;
 import com.dwitsolutions.cowincaptest.MainActivity;
 import com.dwitsolutions.cowincaptest.R;
-import com.dwitsolutions.cowincaptest.Splash;
 import com.dwitsolutions.cowincaptest.model.Center;
 import com.dwitsolutions.cowincaptest.model.District;
 import com.dwitsolutions.cowincaptest.model.State;
@@ -54,6 +54,9 @@ public class CoWinDaoRestImpl implements CoWinDao {
     private Context context;
     String finalListString;
     ArrayList<Center> finalList;
+    SharedPreferences defaultSharedPreference;
+    SharedPreferences.Editor defaultSharedPreferenceEditor;
+    int count =0;
 
 
     //Todo : Constants must be in property file
@@ -66,6 +69,8 @@ public class CoWinDaoRestImpl implements CoWinDao {
     public CoWinDaoRestImpl(RequestQueue requestQueue, Context _context) {
         this.requestQueue = requestQueue;
         context = _context;
+        defaultSharedPreference = PreferenceManager.getDefaultSharedPreferences(context);
+        defaultSharedPreferenceEditor = defaultSharedPreference.edit();
     }
 
     @Override
@@ -146,9 +151,10 @@ public class CoWinDaoRestImpl implements CoWinDao {
     @Override
     public void fetchCenters(Integer pincode, int age) {
 
-        finalList = new ArrayList<>();
-        Splash.editor.remove("finalList");
-        Splash.editor.commit();
+
+
+
+        count = 0;
 
         Date currentDate = new Date();
         for (int x = 0; x < 7; x++) {
@@ -252,13 +258,18 @@ public class CoWinDaoRestImpl implements CoWinDao {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            String fls = Splash.splashSP.getString("finallist", "");
-            if (!fls.isEmpty()) {
+
+            Log.d("TAG count",count+"");
+            String fls = defaultSharedPreference.getString("finallist", "[]");
+            if (!fls.equals("[]")&&count==6) {
                 sendNotification();
             }
+
+            count++;
         }
 
         private void sendNotification() {
+//            TODO : Make sure this method will be called only once in a Cycle in the last iteration only
             Intent intent = new Intent(context, CenterList.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             PendingIntent pendingIntent = PendingIntent.getActivity(context, 0 /* Request code */, intent,
@@ -291,7 +302,7 @@ public class CoWinDaoRestImpl implements CoWinDao {
         @Override
         protected String doInBackground(String... params) {
 
-            Log.d("TAG", "yes");
+
             try {
                 JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
                         Request.Method.GET,
@@ -306,58 +317,60 @@ public class CoWinDaoRestImpl implements CoWinDao {
                                     ObjectMapper mapper = new ObjectMapper();
                                     List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
                                     });
-                                    Log.d("TAG", url);
-//                                    Log.d("TAG", "Pincode = " + pincode + " center = " +  centersList.size());
-                                    // Todo : Check for availability,and raise Reminder with name of hospital with the vaccine type and age,
-                                    //  put filtered result in recycler view , set data in the global list first and
-                                    //  finally when all 7 day result is accumulated show it in recycler view.
-                                    if (centersList.size() > 0) {
-                                        for (int i = 0; i < centersList.size(); i++) {
-                                            Center c = centersList.get(i);
-                                            if (c.getAvailableCapacity() > 0 && c.getMinAge() == age) {
-                                                try {
-                                                    String fls = Splash.splashSP.getString("finallist", "");
-                                                    // Log.d("TAG",fls);
-                                                    if (!fls.equals("")) {
-                                                        //fetching list from shared preference
-                                                        ObjectMapper m = new ObjectMapper();
-                                                        List<Center> cl = m.readValue(fls, new TypeReference<ArrayList<Center>>() {
-                                                        });
-                                                        Log.d("TAG djd", cl.get(0).getName());
-                                                        //adding to the list
-                                                        cl.add(c);
-                                                        //list to string conversion
-                                                        final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-                                                        final ObjectMapper mapper2 = new ObjectMapper();
-                                                        mapper2.writeValue(out2, cl);
-                                                        final byte[] data = out2.toByteArray();
-                                                        Log.d("TAG list aa gyi", new String(data));
-                                                        Splash.editor.remove("finallist");
-                                                        Splash.editor.commit();
-                                                        Splash.editor.putString("finallist", new String(data));
-                                                        Splash.editor.commit();
-                                                    } else {
-                                                        Log.d("TAG", "kuch aur dikkat");
-                                                        List<Center> arrayList = new ArrayList<>();
-                                                        arrayList.add(c);
-                                                        try {
-                                                            final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
-                                                            final ObjectMapper mapper2 = new ObjectMapper();
-                                                            mapper2.writeValue(out2, arrayList);
-                                                            final byte[] data = out2.toByteArray();
-                                                            Splash.editor.putString("finallist", new String(data));
-                                                            Splash.editor.commit();
-                                                        } catch (Exception e) {
-                                                        }
-                                                        //raise alarm
-                                                    }
-                                                } catch (Exception e) {
-                                                    Log.d("TAG", "ye dikkat hai" + e.getMessage());
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                        }
+
+                                    ArrayList<Center> arrayList = new ArrayList<>();
+
+
+                                    for (int i = 0; i < centersList.size() && centersList.get(i).getAvailableCapacity() > 0 && centersList.get(i).getMinAge() == age; i++) {
+                                        arrayList.add(centersList.get(i));
+                                        // Center c = centersList.get(i);
                                     }
+
+                                    try {
+                                        String fls = defaultSharedPreference.getString("finallist", "[]");
+
+                                        // if (!fls.equals("")) {
+                                        //fetching list from shared preference
+
+                                        ObjectMapper m = new ObjectMapper();
+                                        List<Center> cl = m.readValue(fls, new TypeReference<ArrayList<Center>>() {
+                                        });
+
+                                        //adding to the list
+                                        cl.addAll(arrayList);
+                                        //list to string conversion
+                                        final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+                                        final ObjectMapper mapper2 = new ObjectMapper();
+                                        mapper2.writeValue(out2, cl);
+                                        final byte[] data = out2.toByteArray();
+                                        Log.d("TAG list aa gyi", new String(data));
+                                        defaultSharedPreferenceEditor.remove("finallist");
+                                        defaultSharedPreferenceEditor.commit();
+                                        defaultSharedPreferenceEditor.putString("finallist", new String(data));
+                                        defaultSharedPreferenceEditor.commit();
+                                        //}
+//                                        else {
+//
+//                                            List<Center> arrayList = new ArrayList<>();
+//                                            arrayList.add(c);
+//                                            try {
+//                                                final ByteArrayOutputStream out2 = new ByteArrayOutputStream();
+//                                                final ObjectMapper mapper2 = new ObjectMapper();
+//                                                mapper2.writeValue(out2, arrayList);
+//                                                final byte[] data = out2.toByteArray();
+//                                                defaultSharedPreferenceEditor.remove("finallist");
+//                                                defaultSharedPreferenceEditor.commit();
+//                                                defaultSharedPreferenceEditor.putString("finallist", new String(data));
+//                                                defaultSharedPreferenceEditor.commit();
+//                                            } catch (Exception e) {
+//                                            }
+//                                            //raise alarm
+//                                        }
+                                    } catch (Exception e) {
+                                        Log.d("TAG", "ye dikkat hai" + e.getMessage());
+                                        e.printStackTrace();
+                                    }
+
                                 } catch (JSONException e) {
                                     e.printStackTrace();
                                 } catch (JsonMappingException e) {

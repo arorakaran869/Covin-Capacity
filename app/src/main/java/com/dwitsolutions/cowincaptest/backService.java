@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.dwitsolutions.cowincaptest.MainActivity;
@@ -13,7 +14,8 @@ public class backService extends Service {
 
     CountDownTimer cdt;
     int age;
-
+    SharedPreferences defaultSharedPreference;
+    SharedPreferences.Editor defaultSharedPreferenceEditor;
 
     public backService() {
     }
@@ -28,15 +30,18 @@ public class backService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        age = Splash.splashSP.getInt("age",0);
+        defaultSharedPreference = PreferenceManager.getDefaultSharedPreferences(this);
+        defaultSharedPreferenceEditor = defaultSharedPreference.edit();
+        age = defaultSharedPreference.getInt("age",0);
 
         cdt = new CountDownTimer(1000*60*60*60, 40*1000) {
             @Override
             public void onTick(long millisUntilFinished) {
 
-                    // Log.d("TAG", "Countdown seconds remaining: " + millisUntilFinished / 1000);
-                 PinCodeActivity.checkcentersdata(age);
+                // Log.d("TAG", "Countdown seconds remaining: " + millisUntilFinished / 1000);
+                defaultSharedPreferenceEditor.remove("finallist");
+                defaultSharedPreferenceEditor.commit();
+                PinCodeActivity.checkcentersdata(age);
 
             }
 

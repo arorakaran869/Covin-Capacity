@@ -42,7 +42,7 @@ public class Center {
     @JsonProperty("session_id")
     private String sessionId;
     @JsonProperty("date")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date date;
     @JsonProperty("available_capacity")
     private Long availableCapacity;
