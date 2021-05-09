@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.Spinner;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 
 public class CityActivity extends AppCompatActivity {
 
-    AutoCompleteTextView autoCompleteTextView;
+    Spinner spinner;
     CoWinDao coWinDao;
     ArrayList<State> stateList = new ArrayList<>();
     RequestQueue requestQueue;
@@ -38,7 +39,7 @@ public class CityActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_city);
-        autoCompleteTextView = findViewById(R.id.autoCompleteCityName);
+        spinner = findViewById(R.id.autoCompleteCityName);
         requestQueue = Volley.newRequestQueue(this);
 
         fetchStates();
@@ -71,11 +72,10 @@ public class CityActivity extends AppCompatActivity {
                             Log.d("TAG",stateList.get(0).getStateName());
 
 
+                            //set adapter
 
-                            ArrayAdapter<String> adapter = new ArrayAdapter<String>(CityActivity.this,
-                                    android.R.layout.simple_dropdown_item_1line, COUNTRIES);
 
-                            autoCompleteTextView.setAdapter(adapter);
+
 
 
                         } catch (JSONException e) {
