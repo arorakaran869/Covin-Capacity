@@ -125,7 +125,7 @@ public class backService extends Service {
     @Override
     public void onDestroy() {
 
-            Log.d("TAG","on dextroy called");
+         //   Log.d("TAG","on dextroy called");
              isServiceRunning = false;
             stopForeground(true);
         // call MyReceiver which will restart this service via a worker
@@ -142,7 +142,7 @@ public class backService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        Log.d("TAG","removing Task");
+       // Log.d("TAG","removing Task");
         Intent restartServiceIntent = new Intent(getApplicationContext(), backService.class);
         PendingIntent restartServicePendingIntent = PendingIntent.getService(this, 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
         getApplicationContext().getSystemService(Context.ALARM_SERVICE);

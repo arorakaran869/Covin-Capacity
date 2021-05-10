@@ -77,7 +77,7 @@ public class CenterList extends AppCompatActivity {
             public void onInitializationComplete(InitializationStatus initializationStatus) {
                 AdRequest adRequest = new AdRequest.Builder().build();
 
-                InterstitialAd.load(CenterList.this, "ca-app-pub-3940256099942544/1033173712", adRequest, new InterstitialAdLoadCallback() {
+                InterstitialAd.load(CenterList.this, "ca-app-pub-5741018298007043/8476160087", adRequest, new InterstitialAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         // The mInterstitialAd reference will be null until

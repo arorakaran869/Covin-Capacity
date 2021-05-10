@@ -18,6 +18,7 @@ import com.dwitsolutions.cowincaptest.dao.CoWinDaoRestImpl;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.initialization.InitializationStatus;
 import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.Date;
 
@@ -26,12 +27,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     AppCompatButton bypincode,bycity;
     static SharedPreferences defaultSharedPreference;
     static SharedPreferences.Editor defaultSharedPreferenceEditor;
+    private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         defaultSharedPreference = PreferenceManager.getDefaultSharedPreferences(this);
         defaultSharedPreferenceEditor = defaultSharedPreference.edit();
 
