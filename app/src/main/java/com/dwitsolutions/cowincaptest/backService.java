@@ -125,12 +125,15 @@ public class backService extends Service {
     @Override
     public void onDestroy() {
 
-
+            Log.d("TAG","on dextroy called");
              isServiceRunning = false;
             stopForeground(true);
         // call MyReceiver which will restart this service via a worker
+        if(!defaultSharedPreference.getString("type","").equals(""))
+        {
              Intent broadcastIntent = new Intent(this, Restarter.class);
              sendBroadcast(broadcastIntent);
+        }
              super.onDestroy();
 
 

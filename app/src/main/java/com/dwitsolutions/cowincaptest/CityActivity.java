@@ -53,11 +53,12 @@ public class CityActivity extends AppCompatActivity {
     Map<String, Integer> districtMap = new HashMap<>();
     List<String> stateName = new ArrayList<>();
     List<String> districtName = new ArrayList<>();
-    AppCompatButton startcityservice;
+    AppCompatButton startcityservice,stopcityservice;
     static SharedPreferences defaultSharedPreference;
     static SharedPreferences.Editor defaultSharedPreferenceEditor;
     Integer selectedDesId;
     RadioGroup ageradiogroupdistrict;
+    LottieAnimationView cityanim;
     int age;
     private final BroadcastReceiver restarter = new Restarter();
 
@@ -70,7 +71,9 @@ public class CityActivity extends AppCompatActivity {
         circularProgressIndicator = findViewById(R.id.progressi);
         districtSpinner = findViewById(R.id.districtSpinner);
         startcityservice = findViewById(R.id.startcityservice);
+        stopcityservice = findViewById(R.id.stopcityservice);
         ageradiogroupdistrict = findViewById(R.id.ageradiogroupdistrict);
+        cityanim = findViewById(R.id.animcity);
 
         ageradiogroupdistrict.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -78,17 +81,19 @@ public class CityActivity extends AppCompatActivity {
 
                 switch (checkedId)
                 {
-                    case R.id.age18:
+                    case R.id.age18distict:
                         age=18;
                         Log.d("TAG","selected age"+age);
                         defaultSharedPreferenceEditor.putInt("age",age);
                         defaultSharedPreferenceEditor.commit();
+                        startcityservice.setVisibility(View.VISIBLE);
                         break;
-                    case R.id.age45:
+                    case R.id.age45district:
                         age=45;
                         defaultSharedPreferenceEditor.putInt("age",age);
                         defaultSharedPreferenceEditor.commit();
                         Log.d("TAG","selected age"+age);
+                        startcityservice.setVisibility(View.VISIBLE);
                         break;
                 }
             }
@@ -99,6 +104,8 @@ public class CityActivity extends AppCompatActivity {
         defaultSharedPreferenceEditor = defaultSharedPreference.edit();
 
         requestQueue = Volley.newRequestQueue(this);
+
+
 
         fetchStates();
 
@@ -143,12 +150,22 @@ public class CityActivity extends AppCompatActivity {
         startcityservice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                defaultSharedPreferenceEditor.putString("type","district");
-                defaultSharedPreferenceEditor.putInt("districtId",selectedDesId);
-                defaultSharedPreferenceEditor.commit();
+
                 startService();
             }
         });
+
+        stopcityservice.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopService();
+            }
+        });
+
+
+        if(!defaultSharedPreference.getString("type","").equals("")){
+
+        }
 
     }
 
@@ -234,7 +251,7 @@ public class CityActivity extends AppCompatActivity {
                             districtSpinner.setAdapter(adapter);
                             districtSpinner.setVisibility(View.VISIBLE);
                             circularProgressIndicator.setVisibility(View.GONE);
-                            startcityservice.setVisibility(View.VISIBLE);
+                            ageradiogroupdistrict.setVisibility(View.VISIBLE);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (JsonMappingException e) {
@@ -257,18 +274,42 @@ public class CityActivity extends AppCompatActivity {
 
     private void startService()
     {
+        defaultSharedPreferenceEditor.putString("type","district");
+        defaultSharedPreferenceEditor.putInt("districtId",selectedDesId);
+        defaultSharedPreferenceEditor.commit();
         Intent serviceIntent = new Intent(this, backService.class);
         ContextCompat.startForegroundService(CityActivity.this,serviceIntent);
         registerReceiver(restarter,new IntentFilter());
+        startcityservice.setVisibility(View.GONE);
+        spinner.setVisibility(View.GONE);
+        districtSpinner.setVisibility(View.GONE);
+        cityanim.setVisibility(View.VISIBLE);
+        stopcityservice.setVisibility(View.VISIBLE);
+        ageradiogroupdistrict.setVisibility(View.GONE);
+
+
 
     }
+
+
 
 
     private void stopService(){
         Intent serviceIntent = new Intent(this, backService.class);
         getApplicationContext().stopService(serviceIntent);
 
+
+
+        startcityservice.setVisibility(View.VISIBLE);
+        stopcityservice.setVisibility(View.GONE);
+        cityanim.setVisibility(View.GONE);
+        ageradiogroupdistrict.setVisibility(View.VISIBLE);
+        spinner.setVisibility(View.VISIBLE);
+        fetchStates();
         unregisterReceiver(restarter);
+        defaultSharedPreferenceEditor.remove("type");
+        defaultSharedPreferenceEditor.remove("districtId");
+        defaultSharedPreferenceEditor.commit();
     }
 
     @Override

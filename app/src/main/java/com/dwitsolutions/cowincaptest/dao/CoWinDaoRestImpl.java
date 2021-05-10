@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -143,15 +144,11 @@ public class CoWinDaoRestImpl implements CoWinDao {
         count = 0;
         Date currentDate = new Date();
         for (int x = 0; x < 7; x++) {
-            Date currentDatePlusXDay = null;
-            LocalDateTime localDateTime = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                localDateTime = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                localDateTime = localDateTime.plusYears(0).plusMonths(0).plusDays(x);
-                currentDatePlusXDay = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-            }
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(currentDate);
+            calendar.add(Calendar.DATE, x);  // number of days to add
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-
+            Date currentDatePlusXDay = calendar.getTime();
             String centerPincodeURL = MessageFormat.format(CoWinDaoRestImpl.centerPincodeURL, new String[]{pincode.toString(), sdf.format(currentDatePlusXDay)});
             AsyncTask asyncTask = new async(centerPincodeURL, age);
             Log.d("TAG", "Async Execute");
@@ -167,14 +164,11 @@ public class CoWinDaoRestImpl implements CoWinDao {
         count = 0;
         Date currentDate = new Date();
         for (int x = 0; x < 7; x++) {
-            Date currentDatePlusXDay = null;
-            LocalDateTime localDateTime = null;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                localDateTime = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                localDateTime = localDateTime.plusYears(0).plusMonths(0).plusDays(x);
-                currentDatePlusXDay = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-            }
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(currentDate);
+            calendar.add(Calendar.DATE, x);  // number of days to add
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            Date currentDatePlusXDay = calendar.getTime();
             String centerDistrictIdURL = MessageFormat.format(this.centerDistrictIdURL, new String[]{districtId.toString(), sdf.format(currentDatePlusXDay)});
             AsyncTask asyncTask = new async(centerDistrictIdURL, age);
             Log.d("TAG", "Async Execute");

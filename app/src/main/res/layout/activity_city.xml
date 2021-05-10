@@ -51,7 +51,20 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/startcityservice"
         android:text="Start Searching"
+        android:visibility="gone"
+        android:textColor="@color/white"></androidx.appcompat.widget.AppCompatButton>
 
+    <androidx.appcompat.widget.AppCompatButton
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_round"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="60dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/stopcityservice"
+        android:text="Stop Searching"
+        android:visibility="gone"
         android:textColor="@color/white"></androidx.appcompat.widget.AppCompatButton>
 
     <RadioGroup
@@ -79,7 +92,7 @@
         android:layout_height="wrap_content"
         android:text="45+"
         android:textColor="@color/white"
-        android:id="@+id/dictrict"
+        android:id="@+id/age45district"
         android:layout_marginLeft="40dp"></androidx.appcompat.widget.AppCompatRadioButton>
 
     </RadioGroup>
@@ -95,4 +108,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
     </com.airbnb.lottie.LottieAnimationView>
+
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/animcity"
+        app:lottie_rawRes="@raw/la"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        android:visibility="gone"></com.airbnb.lottie.LottieAnimationView>
 </androidx.constraintlayout.widget.ConstraintLayout>
