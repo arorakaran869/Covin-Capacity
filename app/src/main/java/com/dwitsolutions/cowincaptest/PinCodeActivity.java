@@ -1,9 +1,14 @@
 package com.dwitsolutions.cowincaptest;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.SyncStateContract;
 import android.text.StaticLayout;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +19,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.constraintlayout.solver.state.State;
+import androidx.core.content.ContextCompat;
 
 import com.airbnb.lottie.LottieAnimationView;
 import com.android.volley.RequestQueue;
@@ -35,6 +42,7 @@ public class PinCodeActivity extends AppCompatActivity {
     LottieAnimationView relax;
     RadioGroup ageradiogroup;
     int age=0;
+    private final BroadcastReceiver restarter = new Restarter();
 
     static SharedPreferences defaultSharedPreference;
     static SharedPreferences.Editor defaultSharedPreferenceEditor;
@@ -105,9 +113,8 @@ public class PinCodeActivity extends AppCompatActivity {
                     relaxTV.setVisibility(View.VISIBLE);
                     ageradiogroup.setVisibility(View.GONE);
 
-                    intent = new Intent(PinCodeActivity.this, backService.class);
+                    startService();
 
-                    startService(intent);
                 }
             }
         });
@@ -122,8 +129,7 @@ public class PinCodeActivity extends AppCompatActivity {
                 defaultSharedPreferenceEditor.remove("type");
                 defaultSharedPreferenceEditor.remove("pincode");
                 defaultSharedPreferenceEditor.commit();
-                stopService(intent);
-
+                stopService();
                 start.setVisibility(View.VISIBLE);
                 stop.setVisibility(View.GONE);
                 pincode.setVisibility(View.VISIBLE);
@@ -153,6 +159,8 @@ public class PinCodeActivity extends AppCompatActivity {
 
 
 
+
+
         }
 
         else {
@@ -165,10 +173,7 @@ public class PinCodeActivity extends AppCompatActivity {
             ageradiogroup.setVisibility(View.GONE);
 
 
-            intent = new Intent(PinCodeActivity.this, backService.class);
-
-
-            startService(intent);
+           startService();
 
 
 
@@ -182,11 +187,40 @@ public class PinCodeActivity extends AppCompatActivity {
 
     }
 
-    public static void checkcentersdata(int age)
+    private void startService()
     {
-        coWinDao.fetchCenters(defaultSharedPreference.getInt("pincode",0),defaultSharedPreference.getInt("age",0));
+            Intent serviceIntent = new Intent(this, backService.class);
+            ContextCompat.startForegroundService(PinCodeActivity.this,serviceIntent);
+            registerReceiver(restarter,new IntentFilter());
+
+    }
+
+
+    private void stopService(){
+        Intent serviceIntent = new Intent(this, backService.class);
+        getApplicationContext().stopService(serviceIntent);
+
+        unregisterReceiver(restarter);
+    }
+
+    public static void checkcentersdata(int pincode,int age)
+    {
+
+        coWinDao.fetchCenters(pincode,age);
 
         //coWinDao.fetchCenters(474006);
     }
+
+
+    @Override
+    protected void onDestroy() {
+        //stopService(mServiceIntent);
+        Intent broadcastIntent = new Intent();
+        broadcastIntent.setAction("restartservice");
+        broadcastIntent.setClass(this, Restarter.class);
+        this.sendBroadcast(broadcastIntent);
+        super.onDestroy();
+    }
+
 
 }

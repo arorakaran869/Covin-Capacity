@@ -13,7 +13,7 @@ public interface CoWinDao {
 
     public void fetchCenters(Integer pincode,int age);
 
-    public void fetchCenters(String districtId);
+    public void fetchCentersbyDistrict(Integer districtId,int age);
 
     public void fetchCenters(String stateName,String districtName);
 }

@@ -10,26 +10,89 @@
     <Spinner
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@color/white"
+        android:background="@android:drawable/btn_dropdown"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="50dp"
         app:layout_constraintEnd_toEndOf="parent"
         android:id="@+id/autoCompleteCityName"
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
        android:paddingLeft="10dp"
+        android:visibility="gone"
+
+
+
+        ></Spinner>
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@android:drawable/btn_dropdown"
+        app:layout_constraintTop_toBottomOf="@+id/autoCompleteCityName"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/districtSpinner"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:paddingLeft="10dp"
+        android:visibility="gone"
+
+
+
         ></Spinner>
 
     <androidx.appcompat.widget.AppCompatButton
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:background="@drawable/button_round"
-        app:layout_constraintTop_toBottomOf="@+id/autoCompleteCityName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"
+        android:layout_marginBottom="60dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/startcityservice"
         android:text="Start Searching"
+
         android:textColor="@color/white"></androidx.appcompat.widget.AppCompatButton>
 
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@+id/districtSpinner"
+        android:layout_marginTop="60dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:id="@+id/ageradiogroupdistrict"
+        android:gravity="center">
+
+    <androidx.appcompat.widget.AppCompatRadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="18-44"
+        android:textColor="@color/white"
+        android:layout_marginRight="40dp"
+        android:id="@+id/age18distict"
+        ></androidx.appcompat.widget.AppCompatRadioButton>
+    <androidx.appcompat.widget.AppCompatRadioButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="45+"
+        android:textColor="@color/white"
+        android:id="@+id/dictrict"
+        android:layout_marginLeft="40dp"></androidx.appcompat.widget.AppCompatRadioButton>
+
+    </RadioGroup>
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="200dp"
+        android:layout_height="100dp"
+        android:id="@+id/progressi"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_rawRes="@raw/la"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </com.airbnb.lottie.LottieAnimationView>
 </androidx.constraintlayout.widget.ConstraintLayout>

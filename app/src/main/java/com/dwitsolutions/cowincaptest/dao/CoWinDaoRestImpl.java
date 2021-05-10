@@ -162,62 +162,33 @@ public class CoWinDaoRestImpl implements CoWinDao {
     }
 
     @Override
-    public void fetchCenters(String districtId) {
+    public void fetchCentersbyDistrict(Integer districtId,int age) {
+
+        count = 0;
         Date currentDate = new Date();
         for (int x = 0; x < 7; x++) {
+            Date currentDatePlusXDay = null;
             LocalDateTime localDateTime = null;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 localDateTime = currentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 localDateTime = localDateTime.plusYears(0).plusMonths(0).plusDays(x);
-            }
-            Date currentDatePlusXDay = null;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 currentDatePlusXDay = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
             }
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-
-            String centerDistrictIdURL = MessageFormat.format(this.centerDistrictIdURL, new String[]{districtId, sdf.format(currentDatePlusXDay)});
-            Log.d("District URL", centerDistrictIdURL);
-            JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                    Request.Method.GET,
-                    centerDistrictIdURL,
-                    null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                String actualResponse = response.getJSONArray("sessions").toString();
-                                ObjectMapper mapper = new ObjectMapper();
-                                List<Center> centersList = mapper.readValue(actualResponse, new TypeReference<ArrayList<Center>>() {
-                                });
-                                Log.e("Test-Centers", "District Id = " + districtId + " center = " + centersList.size());
-                                // Todo : Check for availability,and raise Reminder with name of hospital with the vaccine type and age,
-                                //  put filtered result in recycler view , set data in the global list first and
-                                //  finally when all 7 day result is accumulated show it in recycler view.
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            } catch (JsonMappingException e) {
-                                e.printStackTrace();
-                            } catch (JsonProcessingException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.e("ERROR", centerDistrictIdURL);
-                        }
-                    }
-            );
-            requestQueue.add(jsonObjectRequest);
+            String centerDistrictIdURL = MessageFormat.format(this.centerDistrictIdURL, new String[]{districtId.toString(), sdf.format(currentDatePlusXDay)});
+            AsyncTask asyncTask = new async(centerDistrictIdURL, age);
+            Log.d("TAG", "Async Execute");
+            asyncTask.execute(new String[]{""});
         }
+
+
     }
 
     @Override
     public void fetchCenters(String stateName, String districtName) {
+
+
+
     }
 
 

@@ -6,5 +6,13 @@ public class District {
     @JsonProperty("district_name")
     String districtName;
     @JsonProperty("district_id")
-    String districtId;
+    Integer districtId;
+
+    public String getDistrictName() {
+        return districtName;
+    }
+
+    public Integer getDistrictId() {
+        return districtId;
+    }
 }
